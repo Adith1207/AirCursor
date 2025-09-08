@@ -30,6 +30,12 @@ class HandTracker:
         return frame
     
     def get_fingertip_coordinates(self, frame):
+        '''
+            -> Replaced find_position(frame) with a dedicated function: get_fingertip_coordinates(frame)
+            -> Returns only the (x, y) of the index fingertip (landmark 8), which is what’s needed for cursor movement.
+            -> This makes it much more clearer
+        '''
+        
         if self.locked_hand_landmarks:
             h, w, _ = frame.shape
             landmark = self.locked_hand_landmarks.landmark[8]  # Index fingertip
