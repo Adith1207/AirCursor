@@ -20,3 +20,8 @@ class GestureController:
         screen_x = (raw_x / cam_width) * SCREEN_WIDTH
         screen_y = (raw_y / cam_height) * SCREEN_HEIGHT
         return int(screen_x), int(screen_y)
+    
+    def smooth_position(self, current_pos):
+        if self.prev_finger_pos is None:
+            self.prev_finger_pos = current_pos
+            return current_pos
