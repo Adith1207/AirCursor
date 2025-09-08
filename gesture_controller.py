@@ -40,4 +40,12 @@ class GestureController:
     
     def move_cursor(self, x, y):
         pyautogui.moveTo(x, y)
+    
+    def handle_drag_drop(self, classifier_output):
+        if classifier_output == "pinch" and not self.dragging:
+            pyautogui.mouseDown()
+            self.dragging = True
+        elif classifier_output != "pinch" and self.dragging:
+            pyautogui.mouseUp()
+            self.dragging = False
 
