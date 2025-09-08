@@ -25,3 +25,15 @@ class GestureController:
         if self.prev_finger_pos is None:
             self.prev_finger_pos = current_pos
             return current_pos
+        
+        dx = (current_pos[0] - self.prev_finger_pos[0]) * self.sensitivity
+        dy = (current_pos[1] - self.prev_finger_pos[1]) * self.sensitivity
+
+        if abs(dx) < self.dead_zone and abs(dy) < self.dead_zone:
+            return self.prev_finger_pos
+
+        new_x = max(0, min(SCREEN_WIDTH, self.prev_finger_pos[0] + int(dx)))
+        new_y = max(0, min(SCREEN_HEIGHT, self.prev_finger_pos[1] + int(dy)))
+
+        self.prev_finger_pos = (new_x, new_y)
+        return (new_x, new_y)
