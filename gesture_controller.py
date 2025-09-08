@@ -15,3 +15,8 @@ class GestureController:
         x1, y1 = point1
         x2, y2 = point2
         return math.hypot(x2 - x1, y2 - y1)
+    
+    def map_to_screen(self, raw_x, raw_y, cam_width, cam_height):
+        screen_x = (raw_x / cam_width) * SCREEN_WIDTH
+        screen_y = (raw_y / cam_height) * SCREEN_HEIGHT
+        return int(screen_x), int(screen_y)
