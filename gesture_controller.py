@@ -37,3 +37,7 @@ class GestureController:
 
         self.prev_finger_pos = (new_x, new_y)
         return (new_x, new_y)
+    
+    def move_cursor(self, x, y):
+        pyautogui.moveTo(x, y)
+
