@@ -17,11 +17,15 @@ class GestureController:
         return math.hypot(x2 - x1, y2 - y1)
     
     def map_to_screen(self, raw_x, raw_y, cam_width, cam_height):
+        # → Converts camera coordinates to screen resolution (linear interpolation).
+
         screen_x = (raw_x / cam_width) * SCREEN_WIDTH
         screen_y = (raw_y / cam_height) * SCREEN_HEIGHT
         return int(screen_x), int(screen_y)
     
-    def smooth_position(self, current_pos):
+    def smooth_position(self, current_pos): 
+        # → Applies smoothing to prevent jitter.
+
         if self.prev_finger_pos is None:
             self.prev_finger_pos = current_pos
             return current_pos
@@ -42,6 +46,10 @@ class GestureController:
         pyautogui.moveTo(x, y)
     
     def handle_drag_drop(self, classifier_output):
+        '''
+            Kept the same logic, but simplified to use pyautogui.mouseDown() and mouseUp() instead of low-level uinput calls.
+        '''
+        
         if classifier_output == "pinch" and not self.dragging:
             pyautogui.mouseDown()
             self.dragging = True
