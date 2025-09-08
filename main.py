@@ -59,3 +59,7 @@ def main():
 
     except KeyboardInterrupt:
         print("\n[INFO] Stopped by user.")
+    
+    finally:
+        cap.release()
+        cv2.destroyAllWindows()
