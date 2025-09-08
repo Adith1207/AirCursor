@@ -28,3 +28,11 @@ class HandTracker:
             self.locked_hand_landmarks = None
 
         return frame
+    
+    def get_fingertip_coordinates(self, frame):
+        if self.locked_hand_landmarks:
+            h, w, _ = frame.shape
+            landmark = self.locked_hand_landmarks.landmark[8]  # Index fingertip
+            cx, cy = int(landmark.x * w), int(landmark.y * h)
+            return (cx, cy)
+        return None
