@@ -99,3 +99,6 @@ def collect(output_csv=OUTPUT_CSV):
 
     stream.release()
     print("Data collection complete. Saved to", output_csv)
+
+if __name__ == "__main__":
+    collect()
