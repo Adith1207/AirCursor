@@ -115,4 +115,8 @@ class WebcamStream:
             })
 
         return frame, results
+    
+    def release(self):
+        self.capture.release()
+        cv2.destroyAllWindows()
 
