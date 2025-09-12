@@ -50,3 +50,52 @@ def extract_features(contour, fingertips):
         area,
         perimeter
     ]
+
+def collect(output_csv=OUTPUT_CSV):
+    stream = WebcamStream(multi_hand=False)
+
+    file_exists = os.path.isfile(output_csv)
+    with open(output_csv, mode="a", newline="") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            header = ["finger_count", "avg_tip_dist", "aspect_ratio", "extent", "solidity", "hull_ratio", "area", "perimeter", "label"]
+            writer.writerow(header)
+
+        for gesture in GESTURES:
+            print(f"\nReady to collect: {gesture.upper()}. Press ENTER when ready.")
+            input()
+            print("Starting in 3 seconds...")
+            time.sleep(3)
+
+            collected = 0
+            while collected < SAMPLES_PER_GESTURE:
+                frame = stream.read_frame()
+                mask = stream.get_skinmask(frame)
+                mask = stream.morpho_mask(mask)
+
+                frame, results = stream.get_finger_tips(mask, frame)
+                if len(results) == 0:
+                    cv2.imshow("Collecting", frame)
+                    if cv2.waitKey(1) & 0xFF == 27:
+                        break
+                    continue
+
+                contour = results[0]["contour"]
+                fingertips = results[0]["fingertips"]
+
+                features = extract_features(contour, fingertips)
+                if features:
+                    writer.writerow(features + [gesture])
+                    collected += 1
+
+                cv2.putText(frame, f"{gesture.upper()} {collected}/{SAMPLES_PER_GESTURE}", (10, 30),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
+                cv2.imshow("Collecting", frame)
+
+                if cv2.waitKey(1) & 0xFF == 27:
+                    break
+
+            print(f"Collected {collected} samples for {gesture.upper()}.")
+
+    stream.release()
+    print("Data collection complete. Saved to", output_csv)
