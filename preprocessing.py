@@ -13,3 +13,9 @@ class WebcamStream:
 
         self.kernel = np.ones((5, 5), np.uint8)
         self.multi_hand = multi_hand  
+    
+    def read_frame(self):
+        ret, frame = self.capture.read()
+        if not ret:
+            raise Exception("Failed to capture the frame")
+        return frame
