@@ -45,3 +45,40 @@ def extract_features(contour, fingertips):
         area,
         perimeter
     ]
+
+def main():
+    model = joblib.load(MODEL_FILE)
+    le = joblib.load(LE_FILE)
+    stream = WebcamStream()
+
+    while True:
+        frame = stream.read_frame()
+        mask = stream.get_skinmask(frame)
+        mask = stream.morpho_mask(mask)
+
+        frame, results = stream.get_finger_tips(mask, frame)
+        if len(results) > 0:
+            contour = results[0]["contour"]
+            fingertips = results[0]["fingertips"]
+
+            features = extract_features(contour, fingertips)
+            if features:
+                X = np.array(features).reshape(1, -1)
+                pred = model.predict(X)[0]
+                label = le.inverse_transform([pred])[0]
+                prob = None
+                if hasattr(model, "predict_proba"):
+                    prob = model.predict_proba(X).max()
+
+                text = f"{label}"
+                if prob:
+                    text += f" ({prob:.2f})"
+                cv2.putText(frame, text, (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+
+        cv2.imshow("Live Prediction", frame)
+        cv2.imshow("Mask", mask)
+        key = cv2.waitKey(1) & 0xFF
+        if key == 27:
+            break
+
+    stream.release()
