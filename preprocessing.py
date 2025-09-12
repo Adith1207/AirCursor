@@ -19,3 +19,11 @@ class WebcamStream:
         if not ret:
             raise Exception("Failed to capture the frame")
         return frame
+    
+    def get_skinmask(self, frame):
+        ycrcb = cv2.cvtColor(frame, cv2.COLOR_BGR2YCrCb)
+        blur = cv2.GaussianBlur(ycrcb, (11, 11), 0)
+        lower_skin = np.array([0, 133, 77], dtype=np.uint8)
+        upper_skin = np.array([255, 173, 127], dtype=np.uint8)
+        mask = cv2.inRange(blur, lower_skin, upper_skin)
+        return mask
