@@ -49,3 +49,6 @@ def train(csv_file=CSV_FILE):
     joblib.dump(best, MODEL_FILE)
     joblib.dump(le, LE_FILE)
     print(f"Model saved as {MODEL_FILE}")
+
+if __name__ == "__main__":
+    train()
