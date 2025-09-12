@@ -27,3 +27,10 @@ class WebcamStream:
         upper_skin = np.array([255, 173, 127], dtype=np.uint8)
         mask = cv2.inRange(blur, lower_skin, upper_skin)
         return mask
+    
+    def morpho_mask(self, mask):
+        mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, self.kernel, iterations=2)
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, self.kernel, iterations=2)
+        mask = cv2.dilate(mask, self.kernel, iterations=1)
+        return mask
+
