@@ -2,7 +2,7 @@ import cv2
 import os
 
 # ========== CONFIG ==========
-GESTURE_NAME = "pinch"   # 👈 Change this for each gesture ("point", "fist", "swipe", etc.)
+GESTURE_NAME = "point"   # 👈 Change this for each gesture ("point", "fist", "swipe", etc.)
 NUM_SAMPLES = 200        # How many images you want to capture
 SAVE_DIR = "gestures"    # Folder where images will be saved
 # ============================
