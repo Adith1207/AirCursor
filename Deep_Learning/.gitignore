@@ -1,3 +1,4 @@
 # Ignore dataset folder
 dataset/
 test_dataset/
+googlenet_gesture.pth
