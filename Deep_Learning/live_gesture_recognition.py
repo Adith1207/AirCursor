@@ -1,54 +1,54 @@
-import cv2
 import torch
-from torchvision import transforms
+import torchvision.transforms as transforms
+from torchvision import models
 from PIL import Image
-from train_model import GoogLeNetArchitecture, GestureIdentifier
-from torchvision.datasets import ImageFolder
+import cv2
 
-# Load gesture labels from your dataset
-dataset = ImageFolder("./gestures", transform=transforms.ToTensor())
-num_classes = len(dataset.classes)
+class GestureRecognizer:
+    def __init__(self, model_path="googlenet_gesture.pth", labels=None):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        weights = models.GoogLeNet_Weights.DEFAULT
+        self.model = models.googlenet(weights=weights)
+        self.model.fc = torch.nn.Linear(self.model.fc.in_features, len(labels))
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        self.model = self.model.to(self.device)
+        self.model.eval()
+        self.labels = labels
 
-# Initialize model
-model_arch = GoogLeNetArchitecture(num_classes=num_classes, pretrained=False)
-model_arch.load_model("googlenet_gesture.pth")
+        self.transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                 std=[0.229, 0.224, 0.225]),
+        ])
 
-gesture_identifier = GestureIdentifier(model_arch, dataset.classes)
+    def predict(self, img):
+        img_tensor = self.transform(img).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            output = self.model(img_tensor)
+            probs = torch.softmax(output, dim=1)[0]
+            pred = torch.argmax(probs).item()
+        return self.labels[pred], probs[pred].item()
 
-# Same transform used for validation
-transform = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485,0.456,0.406],
-                         std=[0.229,0.224,0.225])
-])
+if __name__ == "__main__":
+    labels = ["pinch", "point"]  # your gesture labels
+    recognizer = GestureRecognizer("googlenet_gesture.pth", labels)
 
-cap = cv2.VideoCapture(0)
-print("Press 'q' to quit...")
+    cap = cv2.VideoCapture(0)
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        img_pil = Image.fromarray(img)
 
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+        gesture, conf = recognizer.predict(img_pil)
+        cv2.putText(frame, f"{gesture} ({conf:.2f})", (30, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
+        cv2.imshow("Live Gesture Recognition", frame)
 
-    # Convert frame to PIL image
-    img = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-    img = transform(img)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-    with torch.no_grad():
-        outputs = model_arch.model(img.unsqueeze(0).to(model_arch.device))
-        probs = torch.softmax(outputs, dim=1)[0]
-        _, predicted = torch.max(probs, 0)
-        gesture = dataset.classes[predicted.item()]
-        confidence = probs[predicted.item()].item()
-
-    label = f"{gesture} ({confidence*100:.1f}%)"
-    cv2.putText(frame, label, (20, 50), cv2.FONT_HERSHEY_SIMPLEX, 1.2, (0,255,0), 2)
-    cv2.imshow("Live Gesture Recognition", frame)
-
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
